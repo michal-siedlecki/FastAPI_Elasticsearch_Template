@@ -62,4 +62,4 @@ if __name__ == '__main__':
     if save(result.json(), mock_filename):
         print("mock created")
         quit()
-    print("faled to create mock")
+    print("failed to create mock")
