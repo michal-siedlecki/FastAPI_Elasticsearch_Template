@@ -29,7 +29,7 @@ pip install -r requirements.txt
 Install and set up Elasticsearch engine adn run it locally
 
 
-## Using Messages API
+## Using FastAPI Elasticsearch Template
 
 In order to use FastAPI Elasticsearch Template type:
 
