@@ -5,8 +5,8 @@ from passlib.context import CryptContext
 from pydantic import BaseModel, Field
 from typing import Optional
 
-
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+
 
 class UserModelPlain(BaseModel):
     email: str
@@ -29,5 +29,8 @@ class UserModel(BaseModel):
     def get_password_hash(self, password: str) -> str:
         return pwd_context.hash(password)
 
-    def set_password_hash(self, password):
+    def set_password_hash(self, password: str):
         self.password_hash = pwd_context.hash(password)
+
+    def equals(self, object):
+        return self.id == object.id

@@ -1,5 +1,7 @@
 from typing import Optional
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException
+from starlette import status
+
 from core.mod.models import UserModel, UserModelPlain
 from core.data.search import get_id_by_email
 from core.rout.auth import get_current_user
@@ -8,8 +10,8 @@ from core.data import database
 users_router = APIRouter(
     prefix="/users",
     tags=["users"],
-    responses={404: {"description": "Not found"}}
-    # dependencies=[Depends(get_current_user)]
+    responses={404: {"description": "Not found"}},
+    dependencies=[Depends(get_current_user)]
 )
 
 
@@ -27,7 +29,12 @@ async def user_get_all(email: Optional[str] = None):
 
 
 @users_router.delete("/")
-async def user_delete_all():
+async def user_delete_all(user : UserModel  = Depends(get_current_user)):
+    if user.role_id < 2:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="You have no permissions to this action"
+        )
     database.delete_users()
     return {"message": "all users have been deleted"}
 
@@ -38,10 +45,16 @@ def _get_user_by_email(email: str):
 
 
 @users_router.patch("/")
-async def user_update(updated_user: UserModelPlain):
-    user = database.get_user_by_email(updated_user.email)
+async def user_update(updated_user: UserModelPlain, current_user: UserModel = Depends(get_current_user)):
+
+    user: UserModel = database.get_user_by_email(updated_user.email)
     if not user:
-        return {"message": "failed update user no user with this email"}
+        return {"message": "failed update user, no user with this email"}
+    if current_user.role_id < 2 and not user.equals(current_user):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="You have no permissions to this action"
+        )
     user_id = user.id
     upt_user = UserModel(id=user_id, **updated_user.dict())
     upt_user.set_password_hash(updated_user.password)

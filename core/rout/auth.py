@@ -28,7 +28,7 @@ auth_router = APIRouter()
 
 
 def authenticate_user(email: str, password: str):
-    user = database.get_user_by_email(email)
+    user: UserModel = database.get_user_by_email(email)
     if user is None:
         return False
     if not user.verify_password(password):
@@ -41,7 +41,7 @@ def get_current_user(token: str = Depends(oauth2_scheme)):
     return user
 
 
-#:::::::::::::::::  ENDPOINTS :::::::::::::::::::::
+# :::::::::::::::::  ENDPOINTS :::::::::::::::::::::
 
 
 @auth_router.post("/register")
@@ -51,6 +51,7 @@ async def user_create(new_user: UserModelPlain):
     if not database.add_user(user):
         return {"message": "failed create user"}
     return {"message": "user created"}
+
 
 @auth_router.post('/token')
 async def create_token(request: Request, form_data: OAuth2PasswordRequestForm = Depends()):
@@ -66,7 +67,6 @@ async def create_token(request: Request, form_data: OAuth2PasswordRequestForm = 
     )
     request.session.update({"access_token": access_token, "token_type": "bearer"})
     return {"access_token": access_token, "token_type": "bearer"}
-
 
 
 @auth_router.get('/token-google')
@@ -91,7 +91,6 @@ async def create_token_google(request: Request):
     access_token = create_access_token(
         data={"sub": user.email}, expires_delta=timedelta(minutes=30)
     )
-    request.session.update({"access_token": access_token, "token_type": "bearer"})
     return {"access_token": access_token, "token_type": "bearer"}
 
 

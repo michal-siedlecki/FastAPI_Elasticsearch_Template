@@ -1,5 +1,7 @@
 import time
+from jose import jwt
 import core.data.search
+
 from core.config import settings
 
 
@@ -7,14 +9,6 @@ def test_set_up(export_test_index, database):
     len(database)
     time.sleep(1)
     assert export_test_index
-
-
-def test_get_users_list(client, database):
-    response = client.get(
-        f"{settings.API_VERSION}/users"
-    )
-    assert len(response.json()) == len(database)
-    assert response.status_code == 200
 
 
 def test_create_user(client, create_user_data):
@@ -31,3 +25,9 @@ def test_retrive_user_from_db(create_user_data):
     email = create_user_data.get('email')
     u = core.data.search.get_user_by_email(email)
     assert u.get('email') == email
+
+
+def test_valid_token(client, create_user_data, token):
+    payload = jwt.decode(token, settings.HS256, algorithms=["HS256"])
+    email: str = payload.get("sub")
+    assert email == create_user_data.get('email')

@@ -36,7 +36,7 @@ def get_all_users():
     }
 
     try:
-        r = ES.search(index=get_index(), query=query)
+        r = ES.search(index=get_index(), query=query, size=10000)
         users = _get_search_result(r)
     except Exception:
         return None
